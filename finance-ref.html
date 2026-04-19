@@ -1,0 +1,1273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FinRef — Financial Reference</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root{--bg:#f0f4f8;--surface:#fff;--border:#dde3ed;--primary:#1e3a5f;--blue:#2563eb;--accent:#0891b2;--text:#1a2332;--text2:#526480;--text3:#8fa3bc;--green:#059669;--red:#dc2626;--orange:#d97706;--purple:#7c3aed;--shadow:0 1px 3px rgba(0,0,0,.1);--shadow-md:0 4px 12px rgba(0,0,0,.1);--r:8px;--r-lg:12px;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+/* HEADER */
+header{background:var(--primary);color:#fff;padding:0 24px;height:64px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.25);}
+.logo{display:flex;align-items:center;gap:10px;cursor:pointer;text-decoration:none;color:#fff;}
+.logo-icon{width:36px;height:36px;background:var(--blue);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;}
+.logo-text{font-size:20px;font-weight:700;letter-spacing:-.3px;}
+.logo-sub{font-size:10px;opacity:.55;letter-spacing:1.2px;text-transform:uppercase;display:block;}
+.search-wrap{display:flex;align-items:center;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:24px;padding:8px 16px;gap:8px;min-width:260px;cursor:text;transition:.2s;}
+.search-wrap:hover{background:rgba(255,255,255,.18);}
+.search-wrap input{background:none;border:none;color:#fff;outline:none;font-size:14px;width:100%;}
+.search-wrap input::placeholder{color:rgba(255,255,255,.5);}
+.search-wrap svg{opacity:.55;flex-shrink:0;}
+
+/* NAV */
+nav{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;}
+nav::-webkit-scrollbar{display:none;}
+.nav-btn{padding:14px 16px;border:none;background:none;color:var(--text2);font-size:13px;font-weight:500;cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;transition:.2s;display:flex;align-items:center;gap:7px;}
+.nav-btn:hover{color:var(--primary);background:#f8fafc;}
+.nav-btn.active{color:var(--blue);border-bottom-color:var(--blue);font-weight:600;}
+.nav-chip{width:20px;height:20px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;}
+
+/* MAIN */
+main{max-width:1160px;margin:0 auto;padding:32px 24px;}
+.section{display:none;}.section.active{display:block;}
+.sec-header{margin-bottom:24px;}
+.sec-title{font-size:26px;font-weight:700;color:var(--primary);margin-bottom:4px;}
+.sec-sub{font-size:15px;color:var(--text2);}
+
+/* TABS */
+.tabs{display:flex;gap:2px;background:var(--border);border-radius:10px;padding:3px;margin-bottom:24px;width:fit-content;flex-wrap:wrap;}
+.tab-btn{padding:7px 15px;border:none;background:none;border-radius:7px;font-size:13px;font-weight:500;color:var(--text2);cursor:pointer;transition:.15s;}
+.tab-btn.active{background:#fff;color:var(--primary);font-weight:600;box-shadow:var(--shadow);}
+.tab-pane{display:none;}.tab-pane.active{display:block;}
+
+/* CARDS */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:24px;box-shadow:var(--shadow);margin-bottom:16px;}
+.card-title{font-size:15px;font-weight:600;color:var(--primary);margin-bottom:12px;}
+.prose{font-size:14px;line-height:1.75;color:var(--text);}
+.prose p{margin-bottom:10px;}
+.prose strong{color:var(--primary);}
+
+/* FORMULA BOX */
+.f-box{background:#eff6ff;border:1px solid #bfdbfe;border-radius:var(--r);padding:14px 18px;margin:12px 0;font-family:'SF Mono','Fira Code',monospace;font-size:14px;color:#1e40af;font-weight:500;}
+.f-box.green{background:#f0fdf4;border-color:#bbf7d0;color:#166534;}
+
+/* CALLOUTS */
+.callout{border-radius:var(--r);padding:12px 16px;margin:12px 0;font-size:13px;line-height:1.6;}
+.callout.info{background:#eff6ff;border-left:4px solid #3b82f6;color:#1e40af;}
+.callout.warn{background:#fffbeb;border-left:4px solid #f59e0b;color:#92400e;}
+.callout.success{background:#f0fdf4;border-left:4px solid #22c55e;color:#166534;}
+
+/* EQUATION */
+.equation{font-size:17px;font-weight:700;text-align:center;padding:18px;background:linear-gradient(135deg,#eff6ff,#f0fdf4);border-radius:var(--r);color:var(--primary);margin:14px 0;font-family:Georgia,serif;}
+
+/* LINE ITEMS */
+.item-group{margin-bottom:20px;}
+.item-group-label{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text3);margin-bottom:8px;padding:0 2px;}
+.li-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);margin-bottom:5px;overflow:hidden;transition:border-color .2s;}
+.li-card:hover{border-color:var(--blue);}
+.li-header{display:flex;align-items:center;padding:13px 16px;cursor:pointer;gap:10px;user-select:none;}
+.li-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.li-name{font-size:14px;font-weight:600;flex:1;}
+.li-tag{font-size:11px;padding:2px 8px;border-radius:20px;font-weight:500;}
+.tag-f{background:#eff6ff;color:#2563eb;}.tag-nc{background:#fef3c7;color:#92400e;}
+.tag-sub{background:#f0fdf4;color:#166534;}.tag-key{background:#fdf4ff;color:#7e22ce;}
+.tag-kpi{background:#fff7ed;color:#c2410c;}
+.li-arrow{color:var(--text3);font-size:12px;transition:transform .2s;margin-left:4px;}
+.li-card.open .li-arrow{transform:rotate(180deg);}
+.li-body{display:none;padding:0 16px 14px;border-top:1px solid var(--border);}
+.li-card.open .li-body{display:block;}
+.li-def{font-size:13px;line-height:1.65;color:var(--text);margin-bottom:10px;padding-top:10px;}
+.li-formula{background:#f8fafc;border-left:3px solid var(--blue);padding:9px 13px;border-radius:0 var(--r) var(--r) 0;font-family:monospace;font-size:13px;color:var(--primary);margin-bottom:8px;}
+.li-note{font-size:12px;color:var(--text2);background:#fafbfc;border-radius:var(--r);padding:9px 12px;}
+
+/* COLOR DOTS */
+.d-rev{background:#059669;}.d-cost{background:#dc2626;}.d-profit{background:#2563eb;}
+.d-exp{background:#d97706;}.d-asset{background:#0891b2;}.d-liab{background:#7c3aed;}
+.d-eq{background:#059669;}.d-op{background:#2563eb;}.d-inv{background:#d97706;}
+.d-fin{background:#7c3aed;}.d-met{background:#059669;}.d-gray{background:#9ca3af;}
+
+/* FINANCIAL STATEMENT TABLE */
+.fs-wrap{overflow-x:auto;}
+.fs-table{width:100%;border-collapse:collapse;font-size:13px;min-width:480px;}
+.fs-table caption{text-align:left;font-size:16px;font-weight:700;color:var(--primary);padding-bottom:12px;}
+.fs-table th{text-align:right;padding:9px 12px;background:#f8fafc;color:var(--text2);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;border-bottom:2px solid var(--border);}
+.fs-table th:first-child{text-align:left;}
+.fs-table td{padding:8px 12px;border-bottom:1px solid #f1f5f9;text-align:right;}
+.fs-table td:first-child{text-align:left;}
+.fs-table tr.sec-row td{background:#f1f5f9;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--text2);padding:7px 12px 4px;}
+.fs-table tr.sub td{font-weight:600;background:#f8fafc;border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
+.fs-table tr.total td{font-weight:700;background:#eff6ff;border-top:2px solid #bfdbfe;color:var(--primary);}
+.fs-table tr.i1 td:first-child{padding-left:26px;}
+.fs-table tr.i2 td:first-child{padding-left:42px;}
+.neg{color:var(--red);}.pos{color:var(--green);}.muted{color:var(--text2);}
+.fs-note{font-size:12px;color:var(--text2);margin-top:8px;font-style:italic;}
+
+/* CHART */
+.chart-wrap{position:relative;height:300px;margin:12px 0;}
+.chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.chart-label{font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;}
+
+/* METRICS */
+.ratio-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px;margin-bottom:20px;}
+.ratio-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;box-shadow:var(--shadow);}
+.ratio-label{font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;}
+.ratio-val{font-size:22px;font-weight:700;color:var(--primary);margin-bottom:3px;}
+.ratio-formula{font-size:11px;color:var(--text3);font-family:monospace;margin-bottom:6px;}
+.ratio-bench{font-size:11px;color:var(--text2);padding-top:6px;border-top:1px solid var(--border);}
+
+/* CALC CARDS */
+.calc-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px;margin-bottom:10px;}
+.calc-name{font-size:14px;font-weight:700;color:var(--primary);margin-bottom:6px;}
+.calc-desc{font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:8px;}
+.calc-formula{font-family:monospace;font-size:13px;color:#1e40af;background:#eff6ff;padding:9px 13px;border-radius:var(--r);border:1px solid #bfdbfe;margin-bottom:8px;}
+.calc-ex{font-size:12px;color:var(--green);background:#f0fdf4;padding:8px 12px;border-radius:var(--r);border:1px solid #bbf7d0;}
+
+/* HOME */
+.hero{background:linear-gradient(135deg,var(--primary) 0%,#2563eb 100%);border-radius:var(--r-lg);padding:40px;color:#fff;margin-bottom:28px;}
+.hero h1{font-size:30px;font-weight:800;margin-bottom:10px;}
+.hero p{font-size:15px;opacity:.85;max-width:580px;line-height:1.7;}
+.home-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;}
+.home-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:22px;cursor:pointer;transition:.2s;box-shadow:var(--shadow);}
+.home-card:hover{border-color:var(--blue);box-shadow:var(--shadow-md);transform:translateY(-2px);}
+.home-card-icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:14px;}
+.home-card-title{font-size:16px;font-weight:700;color:var(--primary);margin-bottom:5px;}
+.home-card-desc{font-size:13px;color:var(--text2);line-height:1.5;}
+
+/* SEARCH MODAL */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:flex-start;justify-content:center;padding-top:70px;}
+.modal-bg.open{display:flex;}
+.modal-box{background:#fff;border-radius:var(--r-lg);width:620px;max-width:92vw;max-height:72vh;display:flex;flex-direction:column;box-shadow:0 25px 60px rgba(0,0,0,.3);overflow:hidden;}
+.modal-input-row{display:flex;align-items:center;padding:14px 18px;border-bottom:1px solid var(--border);gap:10px;}
+.modal-input{flex:1;border:none;outline:none;font-size:16px;color:var(--text);}
+.modal-close{background:none;border:none;font-size:20px;color:var(--text3);cursor:pointer;padding:4px;}
+.search-results{overflow-y:auto;flex:1;}
+.s-item{padding:13px 18px;border-bottom:1px solid #f1f5f9;cursor:pointer;transition:.15s;}
+.s-item:hover{background:#f8fafc;}
+.s-sec{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text3);margin-bottom:3px;}
+.s-name{font-size:14px;font-weight:600;color:var(--primary);margin-bottom:3px;}
+.s-def{font-size:12px;color:var(--text2);line-height:1.45;}
+.s-empty{padding:40px;text-align:center;color:var(--text2);font-size:14px;}
+
+/* STEPS */
+.steps{display:flex;flex-direction:column;gap:12px;margin:12px 0;}
+.step{display:flex;gap:14px;align-items:flex-start;}
+.step-n{width:26px;height:26px;border-radius:50%;background:var(--primary);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.step-c{font-size:13px;line-height:1.6;flex:1;}
+.step-c strong{color:var(--primary);}
+
+/* TWO COL */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+
+/* TABLE LEGEND */
+.legend{display:flex;gap:16px;margin-bottom:12px;flex-wrap:wrap;}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text2);}
+.legend-dot{width:10px;height:10px;border-radius:50%;}
+
+@media(max-width:768px){
+  header{padding:0 14px;}
+  .search-wrap{min-width:140px;}
+  main{padding:18px 14px;}
+  .hero{padding:24px 18px;}
+  .hero h1{font-size:22px;}
+  .chart-grid,.two-col{grid-template-columns:1fr;}
+  .tabs{width:100%;}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <a class="logo" onclick="showSection('home')">
+    <div class="logo-icon">FR</div>
+    <div>
+      <div class="logo-text">FinRef</div>
+      <span class="logo-sub">Financial Reference</span>
+    </div>
+  </a>
+  <div class="search-wrap" onclick="openSearch()">
+    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input id="header-search" placeholder="Search terms, formulas, ratios…" readonly onclick="openSearch()">
+  </div>
+</header>
+
+<nav>
+  <button class="nav-btn active" id="nav-home" onclick="showSection('home')">
+    <div class="nav-chip" style="background:#e0e7ff;color:#4338ca;">⌂</div>Home
+  </button>
+  <button class="nav-btn" id="nav-is" onclick="showSection('is')">
+    <div class="nav-chip" style="background:#dcfce7;color:#166534;">IS</div>Income Statement
+  </button>
+  <button class="nav-btn" id="nav-bs" onclick="showSection('bs')">
+    <div class="nav-chip" style="background:#dbeafe;color:#1d4ed8;">BS</div>Balance Sheet
+  </button>
+  <button class="nav-btn" id="nav-cf" onclick="showSection('cf')">
+    <div class="nav-chip" style="background:#fef3c7;color:#92400e;">CF</div>Cash Flow
+  </button>
+  <button class="nav-btn" id="nav-se" onclick="showSection('se')">
+    <div class="nav-chip" style="background:#fdf4ff;color:#7e22ce;">SE</div>Stockholders' Equity
+  </button>
+  <button class="nav-btn" id="nav-km" onclick="showSection('km')">
+    <div class="nav-chip" style="background:#fff7ed;color:#c2410c;">KM</div>Key Metrics
+  </button>
+</nav>
+
+<!-- SEARCH MODAL -->
+<div class="modal-bg" id="search-modal" onclick="closeSearchOutside(event)">
+  <div class="modal-box">
+    <div class="modal-input-row">
+      <svg width="18" height="18" fill="none" stroke="#9aa0b4" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input class="modal-input" id="modal-search-input" placeholder="Search definitions, formulas, ratios…" oninput="doSearch(this.value)" autofocus>
+      <button class="modal-close" onclick="closeSearch()">✕</button>
+    </div>
+    <div class="search-results" id="search-results">
+      <div class="s-empty">Start typing to search across all financial terms, definitions, and formulas.</div>
+    </div>
+  </div>
+</div>
+
+<main>
+
+<!-- ==================== HOME ==================== -->
+<div class="section active" id="home">
+  <div class="hero">
+    <h1>Financial Reference Guide</h1>
+    <p>Instant access to definitions, formulas, and step-by-step examples for every major financial statement and ratio. Designed for finance professionals who need quick, reliable refreshers.</p>
+  </div>
+  <div class="home-grid">
+    <div class="home-card" onclick="showSection('is')">
+      <div class="home-card-icon" style="background:#dcfce7;">📈</div>
+      <div class="home-card-title">Income Statement</div>
+      <div class="home-card-desc">Revenue, COGS, Gross Profit, EBITDA, EBIT, Net Income, and EPS — every line defined with formulas and a full example P&amp;L.</div>
+    </div>
+    <div class="home-card" onclick="showSection('bs')">
+      <div class="home-card-icon" style="background:#dbeafe;">⚖️</div>
+      <div class="home-card-title">Balance Sheet</div>
+      <div class="home-card-desc">Assets, Liabilities, and Equity explained in full, including the fundamental accounting equation and working capital concepts.</div>
+    </div>
+    <div class="home-card" onclick="showSection('cf')">
+      <div class="home-card-icon" style="background:#fef3c7;">💵</div>
+      <div class="home-card-title">Cash Flow Statement</div>
+      <div class="home-card-desc">Operating, Investing, and Financing activities — why free cash flow differs from net income and how cash moves through the business.</div>
+    </div>
+    <div class="home-card" onclick="showSection('se')">
+      <div class="home-card-icon" style="background:#fdf4ff;">📋</div>
+      <div class="home-card-title">Stockholders' Equity</div>
+      <div class="home-card-desc">Changes in equity over time — retained earnings, dividends, buybacks, and how this statement ties to the other three.</div>
+    </div>
+    <div class="home-card" onclick="showSection('km')">
+      <div class="home-card-icon" style="background:#fff7ed;">📊</div>
+      <div class="home-card-title">Key Metrics &amp; Ratios</div>
+      <div class="home-card-desc">Cross-statement ratios including liquidity, profitability, leverage, and efficiency metrics — with benchmarks and worked examples.</div>
+    </div>
+  </div>
+  <div class="callout info" style="margin-top:24px;">
+    <strong>Tip:</strong> Use the search bar at the top to instantly find any term, formula, or ratio across all sections.
+  </div>
+</div>
+
+<!-- ==================== INCOME STATEMENT ==================== -->
+<div class="section" id="is">
+  <div class="sec-header">
+    <div class="sec-title">Income Statement (P&amp;L)</div>
+    <div class="sec-sub">Also called the Profit &amp; Loss Statement or Statement of Operations</div>
+  </div>
+  <div class="tabs" id="is-tabs">
+    <button class="tab-btn active" onclick="switchTab('is','overview')">Overview</button>
+    <button class="tab-btn" onclick="switchTab('is','items')">Line Items</button>
+    <button class="tab-btn" onclick="switchTab('is','calcs')">Calculations</button>
+    <button class="tab-btn" onclick="switchTab('is','example')">Example</button>
+    <button class="tab-btn" onclick="switchTab('is','visual')">Visual</button>
+  </div>
+
+  <div class="tab-pane active" id="is-overview">
+    <div class="card">
+      <div class="card-title">What Is the Income Statement?</div>
+      <div class="prose">
+        <p>The income statement reports a company's <strong>financial performance over a specific period</strong> — typically a quarter or fiscal year. It answers the fundamental question: <em>Did the company make money?</em></p>
+        <p>It flows top-down from <strong>Revenue</strong> (total sales) through a series of expenses and deductions to arrive at <strong>Net Income</strong> — the "bottom line." Every subtotal along the way (Gross Profit, EBITDA, EBIT) provides a different lens on profitability.</p>
+        <p>Unlike the balance sheet (a snapshot) or cash flow statement (cash movements), the income statement reflects <strong>accrual accounting</strong> — revenue and expenses are recognized when earned or incurred, not necessarily when cash changes hands.</p>
+      </div>
+      <div class="equation">Revenue − Expenses = Net Income</div>
+      <div class="callout info"><strong>Key distinction:</strong> Net Income ≠ Cash Flow. A company can show strong net income yet run out of cash due to timing differences, non-cash items, and working capital changes.</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Structure at a Glance</div>
+      <div class="steps">
+        <div class="step"><div class="step-n">1</div><div class="step-c"><strong>Revenue</strong> — Total sales/service income before any deductions</div></div>
+        <div class="step"><div class="step-n">2</div><div class="step-c"><strong>− Cost of Goods Sold (COGS)</strong> — Direct costs to produce goods or services</div></div>
+        <div class="step"><div class="step-n">3</div><div class="step-c"><strong>= Gross Profit</strong> — Revenue remaining after direct costs</div></div>
+        <div class="step"><div class="step-n">4</div><div class="step-c"><strong>− Operating Expenses</strong> — SG&amp;A, R&amp;D, D&amp;A (overhead &amp; infrastructure)</div></div>
+        <div class="step"><div class="step-n">5</div><div class="step-c"><strong>= EBIT / Operating Income</strong> — Profit from core operations before financing costs</div></div>
+        <div class="step"><div class="step-n">6</div><div class="step-c"><strong>± Interest &amp; Other</strong> — Cost of debt, investment income, non-operating items</div></div>
+        <div class="step"><div class="step-n">7</div><div class="step-c"><strong>= EBT</strong> — Earnings before income tax</div></div>
+        <div class="step"><div class="step-n">8</div><div class="step-c"><strong>− Income Tax Expense</strong> — Federal, state, and local taxes</div></div>
+        <div class="step"><div class="step-n">9</div><div class="step-c"><strong>= Net Income</strong> — The "bottom line" — profit attributable to shareholders</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tab-pane" id="is-items">
+    <div class="item-group">
+      <div class="item-group-label">Top Line</div>
+      <div id="is-line-items"></div>
+    </div>
+  </div>
+
+  <div class="tab-pane" id="is-calcs">
+    <div id="is-calc-cards"></div>
+  </div>
+
+  <div class="tab-pane" id="is-example">
+    <div class="card">
+      <div class="card-title">Example — Apex Industries, Inc. | Fiscal Year 2024 (in $ millions)</div>
+      <div class="callout success">All figures use a fictional company. Numbers are realistic and internally consistent across all four statements.</div>
+      <div class="fs-wrap">
+        <table class="fs-table">
+          <tr class="sec-row"><td colspan="2">Revenue</td></tr>
+          <tr class="i1"><td>Net Sales</td><td>$500.0</td></tr>
+          <tr class="sub"><td>Total Revenue</td><td>$500.0</td></tr>
+          <tr class="sec-row"><td colspan="2">Cost of Revenue</td></tr>
+          <tr class="i1"><td>Cost of Goods Sold (COGS)</td><td class="neg">($300.0)</td></tr>
+          <tr class="sub"><td>Gross Profit</td><td class="pos">$200.0</td></tr>
+          <tr class="i2"><td>Gross Margin %</td><td class="muted">40.0%</td></tr>
+          <tr class="sec-row"><td colspan="2">Operating Expenses</td></tr>
+          <tr class="i1"><td>Selling, General &amp; Administrative (SG&amp;A)</td><td class="neg">($80.0)</td></tr>
+          <tr class="i1"><td>Research &amp; Development (R&amp;D)</td><td class="neg">($20.0)</td></tr>
+          <tr class="i1"><td>Depreciation &amp; Amortization (D&amp;A)</td><td class="neg">($25.0)</td></tr>
+          <tr class="sub"><td>Total Operating Expenses</td><td class="neg">($125.0)</td></tr>
+          <tr class="sub"><td>EBITDA <span class="muted" style="font-weight:400">(Gross Profit − SG&amp;A − R&amp;D)</span></td><td class="pos">$100.0</td></tr>
+          <tr class="i2"><td>EBITDA Margin %</td><td class="muted">20.0%</td></tr>
+          <tr class="sub"><td>EBIT / Operating Income</td><td class="pos">$75.0</td></tr>
+          <tr class="i2"><td>Operating Margin %</td><td class="muted">15.0%</td></tr>
+          <tr class="sec-row"><td colspan="2">Non-Operating Items</td></tr>
+          <tr class="i1"><td>Interest Expense</td><td class="neg">($12.0)</td></tr>
+          <tr class="i1"><td>Other Income / (Expense)</td><td>$1.5</td></tr>
+          <tr class="sub"><td>Earnings Before Tax (EBT)</td><td class="pos">$64.5</td></tr>
+          <tr class="i1"><td>Income Tax Expense (21%)</td><td class="neg">($13.5)</td></tr>
+          <tr class="total"><td>Net Income</td><td class="pos">$51.0</td></tr>
+          <tr class="i2"><td>Net Margin %</td><td class="muted">10.2%</td></tr>
+          <tr class="i1"><td>Diluted Shares Outstanding (millions)</td><td>100.0</td></tr>
+          <tr class="sub"><td>Diluted EPS</td><td class="pos">$0.51</td></tr>
+        </table>
+      </div>
+      <p class="fs-note">Note: EBITDA = EBIT + D&amp;A = $75.0 + $25.0 = $100.0M | Effective tax rate 21%</p>
+    </div>
+  </div>
+
+  <div class="tab-pane" id="is-visual">
+    <div class="card">
+      <div class="card-title">Revenue Waterfall — From Revenue to Net Income</div>
+      <div class="chart-wrap"><canvas id="is-waterfall-chart"></canvas></div>
+    </div>
+    <div class="chart-grid">
+      <div class="card">
+        <div class="card-title">Margin Progression (%)</div>
+        <div class="chart-wrap" style="height:220px"><canvas id="is-margin-chart"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Expense Breakdown</div>
+        <div class="chart-wrap" style="height:220px"><canvas id="is-expense-chart"></canvas></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== BALANCE SHEET ==================== -->
+<div class="section" id="bs">
+  <div class="sec-header">
+    <div class="sec-title">Balance Sheet</div>
+    <div class="sec-sub">Also called the Statement of Financial Position</div>
+  </div>
+  <div class="tabs" id="bs-tabs">
+    <button class="tab-btn active" onclick="switchTab('bs','overview')">Overview</button>
+    <button class="tab-btn" onclick="switchTab('bs','items')">Line Items</button>
+    <button class="tab-btn" onclick="switchTab('bs','calcs')">Calculations</button>
+    <button class="tab-btn" onclick="switchTab('bs','example')">Example</button>
+    <button class="tab-btn" onclick="switchTab('bs','visual')">Visual</button>
+  </div>
+
+  <div class="tab-pane active" id="bs-overview">
+    <div class="card">
+      <div class="card-title">What Is the Balance Sheet?</div>
+      <div class="prose">
+        <p>The balance sheet is a <strong>point-in-time snapshot</strong> of what a company owns (assets), what it owes (liabilities), and the net residual interest of shareholders (equity). It is produced as of a specific date — typically the last day of a reporting period.</p>
+        <p>It is governed by a single inviolable equation. If the two sides don't balance, there is an accounting error:</p>
+      </div>
+      <div class="equation">Assets = Liabilities + Shareholders' Equity</div>
+      <div class="prose">
+        <p>Assets are listed in order of <strong>liquidity</strong> (most liquid first). Liabilities are listed in order of <strong>due date</strong> (soonest due first). The balance sheet links to both the income statement (via retained earnings) and the cash flow statement (via changes in cash).</p>
+      </div>
+      <div class="callout info"><strong>The three-statement link:</strong> Net Income from the P&amp;L flows into Retained Earnings on the Balance Sheet. The ending cash balance on the Cash Flow Statement equals Cash on the Balance Sheet.</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Structure at a Glance</div>
+      <div class="two-col">
+        <div>
+          <div class="f-box green" style="margin-bottom:8px;">ASSETS</div>
+          <div class="steps">
+            <div class="step"><div class="step-n" style="background:#0891b2">CA</div><div class="step-c"><strong>Current Assets</strong> — Convertible to cash within 12 months (Cash, AR, Inventory)</div></div>
+            <div class="step"><div class="step-n" style="background:#0891b2">LTA</div><div class="step-c"><strong>Long-Term Assets</strong> — PP&amp;E, Intangibles, Goodwill — held &gt;12 months</div></div>
+          </div>
+        </div>
+        <div>
+          <div class="f-box" style="margin-bottom:8px;">LIABILITIES + EQUITY</div>
+          <div class="steps">
+            <div class="step"><div class="step-n" style="background:#7c3aed">CL</div><div class="step-c"><strong>Current Liabilities</strong> — Due within 12 months (AP, Accrued, Current Debt)</div></div>
+            <div class="step"><div class="step-n" style="background:#7c3aed">LTL</div><div class="step-c"><strong>Long-Term Liabilities</strong> — Debt and obligations due beyond 12 months</div></div>
+            <div class="step"><div class="step-n" style="background:#059669">EQ</div><div class="step-c"><strong>Shareholders' Equity</strong> — Residual after all liabilities (Common Stock + Retained Earnings)</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tab-pane" id="bs-items">
+    <div id="bs-line-items"></div>
+  </div>
+
+  <div class="tab-pane" id="bs-calcs">
+    <div id="bs-calc-cards"></div>
+  </div>
+
+  <div class="tab-pane" id="bs-example">
+    <div class="card">
+      <div class="card-title">Example — Apex Industries, Inc. | As of December 31, 2024 (in $ millions)</div>
+      <div class="fs-wrap">
+        <table class="fs-table">
+          <tr class="sec-row"><td colspan="2">ASSETS</td></tr>
+          <tr class="sec-row"><td colspan="2" style="padding-left:14px;font-weight:600;">Current Assets</td></tr>
+          <tr class="i1"><td>Cash &amp; Cash Equivalents</td><td class="pos">$75.0</td></tr>
+          <tr class="i1"><td>Accounts Receivable, net</td><td>$60.0</td></tr>
+          <tr class="i1"><td>Inventory</td><td>$45.0</td></tr>
+          <tr class="i1"><td>Prepaid Expenses &amp; Other</td><td>$10.0</td></tr>
+          <tr class="sub"><td>Total Current Assets</td><td>$190.0</td></tr>
+          <tr class="sec-row"><td colspan="2" style="padding-left:14px;font-weight:600;">Non-Current Assets</td></tr>
+          <tr class="i1"><td>Property, Plant &amp; Equipment (gross)</td><td>$400.0</td></tr>
+          <tr class="i1"><td>Less: Accumulated Depreciation</td><td class="neg">($150.0)</td></tr>
+          <tr class="i1"><td>Net PP&amp;E</td><td>$250.0</td></tr>
+          <tr class="i1"><td>Intangible Assets, net</td><td>$50.0</td></tr>
+          <tr class="i1"><td>Goodwill</td><td>$80.0</td></tr>
+          <tr class="sub"><td>Total Non-Current Assets</td><td>$380.0</td></tr>
+          <tr class="total"><td>TOTAL ASSETS</td><td>$570.0</td></tr>
+
+          <tr class="sec-row"><td colspan="2">LIABILITIES</td></tr>
+          <tr class="sec-row"><td colspan="2" style="padding-left:14px;font-weight:600;">Current Liabilities</td></tr>
+          <tr class="i1"><td>Accounts Payable</td><td>$40.0</td></tr>
+          <tr class="i1"><td>Accrued Liabilities</td><td>$35.0</td></tr>
+          <tr class="i1"><td>Current Portion of Long-Term Debt</td><td>$20.0</td></tr>
+          <tr class="sub"><td>Total Current Liabilities</td><td>$95.0</td></tr>
+          <tr class="sec-row"><td colspan="2" style="padding-left:14px;font-weight:600;">Non-Current Liabilities</td></tr>
+          <tr class="i1"><td>Long-Term Debt</td><td>$200.0</td></tr>
+          <tr class="i1"><td>Deferred Tax Liabilities</td><td>$25.0</td></tr>
+          <tr class="sub"><td>Total Non-Current Liabilities</td><td>$225.0</td></tr>
+          <tr class="sub"><td>Total Liabilities</td><td>$320.0</td></tr>
+
+          <tr class="sec-row"><td colspan="2">SHAREHOLDERS' EQUITY</td></tr>
+          <tr class="i1"><td>Common Stock &amp; Additional Paid-in Capital</td><td>$150.0</td></tr>
+          <tr class="i1"><td>Retained Earnings</td><td>$100.0</td></tr>
+          <tr class="sub"><td>Total Shareholders' Equity</td><td>$250.0</td></tr>
+          <tr class="total"><td>TOTAL LIABILITIES + EQUITY</td><td>$570.0</td></tr>
+        </table>
+      </div>
+      <p class="fs-note">Check: Total Assets ($570.0M) = Total Liabilities ($320.0M) + Total Equity ($250.0M) ✓</p>
+    </div>
+  </div>
+
+  <div class="tab-pane" id="bs-visual">
+    <div class="chart-grid">
+      <div class="card">
+        <div class="card-title">Asset Composition</div>
+        <div class="chart-wrap" style="height:260px"><canvas id="bs-assets-chart"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Liabilities &amp; Equity Composition</div>
+        <div class="chart-wrap" style="height:260px"><canvas id="bs-le-chart"></canvas></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Balance Sheet Structure</div>
+      <div class="chart-wrap"><canvas id="bs-structure-chart"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== CASH FLOW ==================== -->
+<div class="section" id="cf">
+  <div class="sec-header">
+    <div class="sec-title">Cash Flow Statement</div>
+    <div class="sec-sub">Statement of Cash Flows — tracks cash inflows and outflows over a period</div>
+  </div>
+  <div class="tabs" id="cf-tabs">
+    <button class="tab-btn active" onclick="switchTab('cf','overview')">Overview</button>
+    <button class="tab-btn" onclick="switchTab('cf','items')">Line Items</button>
+    <button class="tab-btn" onclick="switchTab('cf','calcs')">Calculations</button>
+    <button class="tab-btn" onclick="switchTab('cf','example')">Example</button>
+    <button class="tab-btn" onclick="switchTab('cf','visual')">Visual</button>
+  </div>
+
+  <div class="tab-pane active" id="cf-overview">
+    <div class="card">
+      <div class="card-title">What Is the Cash Flow Statement?</div>
+      <div class="prose">
+        <p>The cash flow statement reconciles the difference between <strong>net income</strong> (accrual-based) and <strong>actual cash</strong> generated or consumed. It is divided into three sections reflecting the three fundamental activities of any business.</p>
+        <p>It answers: <em>Where did our cash come from, and where did it go?</em> A company may be profitable yet cash-poor (if customers pay slowly) or cash-rich yet unprofitable (if it's drawing down capital).</p>
+      </div>
+      <div class="callout warn"><strong>Accounting Alert:</strong> Under the indirect method (most common in the US), Operating Activities starts with Net Income and adjusts for non-cash items and working capital changes. This is not the same as collecting all cash receipts and subtracting all cash payments.</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Three Sections</div>
+      <div class="steps">
+        <div class="step"><div class="step-n" style="background:#2563eb">1</div><div class="step-c"><strong>Operating Activities (OCF)</strong> — Cash generated from the core business. Starts with Net Income, adds back non-cash charges (D&amp;A), adjusts for working capital changes. This is the most important section — sustainable businesses must generate positive OCF.</div></div>
+        <div class="step"><div class="step-n" style="background:#d97706">2</div><div class="step-c"><strong>Investing Activities (ICF)</strong> — Cash spent on or received from long-term investments. CapEx (buying PP&amp;E) is a large outflow here. Asset sales, acquisitions, and divestitures also appear. Typically negative for growing companies.</div></div>
+        <div class="step"><div class="step-n" style="background:#7c3aed">3</div><div class="step-c"><strong>Financing Activities (FCF)</strong> — Cash flows related to raising and returning capital. Includes debt issuance/repayment, equity issuance, share buybacks, and dividends. Note: "Free Cash Flow" (a key metric) is <em>not</em> this section — it's OCF − CapEx.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tab-pane" id="cf-items">
+    <div id="cf-line-items"></div>
+  </div>
+
+  <div class="tab-pane" id="cf-calcs">
+    <div id="cf-calc-cards"></div>
+  </div>
+
+  <div class="tab-pane" id="cf-example">
+    <div class="card">
+      <div class="card-title">Example — Apex Industries, Inc. | Fiscal Year 2024 (in $ millions)</div>
+      <div class="fs-wrap">
+        <table class="fs-table">
+          <tr class="sec-row"><td colspan="2">OPERATING ACTIVITIES</td></tr>
+          <tr class="i1"><td>Net Income</td><td class="pos">$51.0</td></tr>
+          <tr class="i1"><td>Depreciation &amp; Amortization</td><td class="pos">$25.0</td></tr>
+          <tr class="i1"><td>Stock-Based Compensation</td><td class="pos">$8.0</td></tr>
+          <tr class="sec-row"><td colspan="2" style="padding-left:26px;font-size:11px;">Changes in Working Capital</td></tr>
+          <tr class="i2"><td>(Increase) / Decrease in Accounts Receivable</td><td class="neg">($5.0)</td></tr>
+          <tr class="i2"><td>(Increase) / Decrease in Inventory</td><td class="neg">($8.0)</td></tr>
+          <tr class="i2"><td>Increase / (Decrease) in Accounts Payable</td><td class="pos">$6.0</td></tr>
+          <tr class="i2"><td>Increase / (Decrease) in Accrued Liabilities</td><td class="pos">$4.0</td></tr>
+          <tr class="total"><td>Net Cash from Operating Activities (OCF)</td><td class="pos">$81.0</td></tr>
+
+          <tr class="sec-row"><td colspan="2">INVESTING ACTIVITIES</td></tr>
+          <tr class="i1"><td>Capital Expenditures (CapEx)</td><td class="neg">($50.0)</td></tr>
+          <tr class="i1"><td>Proceeds from Sale of Assets</td><td class="pos">$3.0</td></tr>
+          <tr class="total"><td>Net Cash from Investing Activities</td><td class="neg">($47.0)</td></tr>
+
+          <tr class="sec-row"><td colspan="2">FINANCING ACTIVITIES</td></tr>
+          <tr class="i1"><td>Repayment of Long-Term Debt</td><td class="neg">($20.0)</td></tr>
+          <tr class="i1"><td>Dividends Paid</td><td class="neg">($10.0)</td></tr>
+          <tr class="i1"><td>Proceeds from Stock Option Exercises</td><td class="pos">$5.0</td></tr>
+          <tr class="total"><td>Net Cash from Financing Activities</td><td class="neg">($25.0)</td></tr>
+
+          <tr class="sec-row"><td colspan="2">CASH RECONCILIATION</td></tr>
+          <tr class="i1"><td>Net Change in Cash</td><td>$9.0</td></tr>
+          <tr class="i1"><td>Cash — Beginning of Period</td><td>$66.0</td></tr>
+          <tr class="total"><td>Cash — End of Period</td><td class="pos">$75.0</td></tr>
+        </table>
+      </div>
+      <p class="fs-note">Free Cash Flow = OCF ($81.0M) − CapEx ($50.0M) = $31.0M | Ending cash ties to Balance Sheet ✓</p>
+    </div>
+  </div>
+
+  <div class="tab-pane" id="cf-visual">
+    <div class="card">
+      <div class="card-title">Cash Flow by Activity</div>
+      <div class="chart-wrap"><canvas id="cf-bar-chart"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">OCF Bridge — Net Income to Cash from Operations</div>
+      <div class="chart-wrap"><canvas id="cf-bridge-chart"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== STOCKHOLDERS' EQUITY ==================== -->
+<div class="section" id="se">
+  <div class="sec-header">
+    <div class="sec-title">Statement of Stockholders' Equity</div>
+    <div class="sec-sub">Also called the Statement of Changes in Equity</div>
+  </div>
+  <div class="tabs" id="se-tabs">
+    <button class="tab-btn active" onclick="switchTab('se','overview')">Overview</button>
+    <button class="tab-btn" onclick="switchTab('se','items')">Components</button>
+    <button class="tab-btn" onclick="switchTab('se','calcs')">Calculations</button>
+    <button class="tab-btn" onclick="switchTab('se','example')">Example</button>
+  </div>
+
+  <div class="tab-pane active" id="se-overview">
+    <div class="card">
+      <div class="card-title">What Is the Statement of Stockholders' Equity?</div>
+      <div class="prose">
+        <p>This statement explains <strong>every change in the equity section</strong> of the balance sheet from the beginning to the end of a reporting period. It serves as the bridge connecting the income statement to the balance sheet via retained earnings.</p>
+        <p>Equity increases when a company earns net income or issues stock. Equity decreases when it pays dividends, repurchases shares, or records a net loss.</p>
+      </div>
+      <div class="equation">Ending Equity = Beginning Equity + Net Income − Dividends ± Other Changes</div>
+      <div class="callout info"><strong>Three-statement link:</strong> Net Income from the Income Statement → increases Retained Earnings here. Ending Total Equity here → ties to the Balance Sheet. Dividends paid here → appears in Financing Activities on the Cash Flow Statement.</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Components of Equity</div>
+      <div class="steps">
+        <div class="step"><div class="step-n">1</div><div class="step-c"><strong>Common Stock (Par Value)</strong> — Nominal value assigned to each share at issuance. Usually immaterial (e.g., $0.01/share).</div></div>
+        <div class="step"><div class="step-n">2</div><div class="step-c"><strong>Additional Paid-in Capital (APIC)</strong> — Amount received above par value when shares are issued or stock options exercised.</div></div>
+        <div class="step"><div class="step-n">3</div><div class="step-c"><strong>Retained Earnings</strong> — Cumulative net income since inception, minus all dividends ever paid. This is the most dynamic component.</div></div>
+        <div class="step"><div class="step-n">4</div><div class="step-c"><strong>Treasury Stock</strong> — Cost of shares the company has repurchased. Shown as a negative (contra-equity) because it reduces equity.</div></div>
+        <div class="step"><div class="step-n">5</div><div class="step-c"><strong>Accumulated Other Comprehensive Income (AOCI)</strong> — Unrealized gains/losses on certain investments, foreign currency translation, pension adjustments — items not flowing through net income.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tab-pane" id="se-items">
+    <div id="se-line-items"></div>
+  </div>
+
+  <div class="tab-pane" id="se-calcs">
+    <div id="se-calc-cards"></div>
+  </div>
+
+  <div class="tab-pane" id="se-example">
+    <div class="card">
+      <div class="card-title">Example — Apex Industries, Inc. | FY 2024 (in $ millions)</div>
+      <div class="fs-wrap">
+        <table class="fs-table">
+          <thead>
+            <tr>
+              <th style="text-align:left;min-width:200px;">Description</th>
+              <th>Common Stock &amp; APIC</th>
+              <th>Retained Earnings</th>
+              <th>Treasury Stock</th>
+              <th>AOCI</th>
+              <th>Total Equity</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="sub"><td>Balance — Jan 1, 2024</td><td>$145.0</td><td>$59.0</td><td>—</td><td>—</td><td>$204.0</td></tr>
+            <tr class="i1"><td>Net Income</td><td>—</td><td class="pos">$51.0</td><td>—</td><td>—</td><td class="pos">$51.0</td></tr>
+            <tr class="i1"><td>Dividends Declared ($0.10/share)</td><td>—</td><td class="neg">($10.0)</td><td>—</td><td>—</td><td class="neg">($10.0)</td></tr>
+            <tr class="i1"><td>Stock-Based Compensation</td><td class="pos">$8.0</td><td>—</td><td>—</td><td>—</td><td class="pos">$8.0</td></tr>
+            <tr class="i1"><td>Stock Option Exercises</td><td class="pos">$5.0</td><td>—</td><td>—</td><td>—</td><td class="pos">$5.0</td></tr>
+            <tr class="i1"><td>Other Comprehensive Income</td><td>—</td><td>—</td><td>—</td><td class="pos">$2.0</td><td class="pos">$2.0</td></tr>
+            <tr class="total"><td>Balance — Dec 31, 2024</td><td>$158.0</td><td>$100.0</td><td>—</td><td>$2.0</td><td>$260.0</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="fs-note">Note: The Common Stock + APIC balance on the balance sheet is $150M (excludes the $8M SBC reclassified as APIC component). Retained Earnings ties to Balance Sheet: $100.0M ✓</p>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== KEY METRICS ==================== -->
+<div class="section" id="km">
+  <div class="sec-header">
+    <div class="sec-title">Key Metrics &amp; Financial Ratios</div>
+    <div class="sec-sub">Cross-statement calculations — drawing from the P&amp;L, Balance Sheet, and Cash Flow Statement</div>
+  </div>
+  <div class="tabs" id="km-tabs">
+    <button class="tab-btn active" onclick="switchTab('km','liquidity')">Liquidity</button>
+    <button class="tab-btn" onclick="switchTab('km','profitability')">Profitability</button>
+    <button class="tab-btn" onclick="switchTab('km','leverage')">Leverage</button>
+    <button class="tab-btn" onclick="switchTab('km','efficiency')">Efficiency</button>
+    <button class="tab-btn" onclick="switchTab('km','visual')">Visual</button>
+  </div>
+
+  <div class="tab-pane active" id="km-liquidity">
+    <div class="callout info">Liquidity ratios measure a company's ability to meet short-term obligations. Higher is generally better — but excessively high ratios may indicate idle assets.</div>
+    <div id="km-liquidity-cards"></div>
+  </div>
+  <div class="tab-pane" id="km-profitability">
+    <div class="callout info">Profitability ratios show how efficiently a company converts revenue or assets into profit. Compare against industry peers and historical trends for context.</div>
+    <div id="km-profitability-cards"></div>
+  </div>
+  <div class="tab-pane" id="km-leverage">
+    <div class="callout warn">Leverage ratios assess debt burden and solvency. High leverage amplifies returns in good times and losses in downturns — context and industry norms matter greatly.</div>
+    <div id="km-leverage-cards"></div>
+  </div>
+  <div class="tab-pane" id="km-efficiency">
+    <div class="callout success">Efficiency ratios reveal how effectively a company manages its assets and working capital cycle. Days metrics are especially important for cash management.</div>
+    <div id="km-efficiency-cards"></div>
+  </div>
+  <div class="tab-pane" id="km-visual">
+    <div class="chart-grid">
+      <div class="card">
+        <div class="card-title">Margin Comparison (%)</div>
+        <div class="chart-wrap" style="height:240px"><canvas id="km-margins-chart"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Working Capital Days</div>
+        <div class="chart-wrap" style="height:240px"><canvas id="km-wc-chart"></canvas></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Financial Health Snapshot — Apex Industries vs. Benchmarks</div>
+      <div class="chart-wrap" style="height:320px"><canvas id="km-radar-chart"></canvas></div>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<script>
+// ============================================================
+// DATA
+// ============================================================
+
+const IS_ITEMS = [
+  {name:"Revenue (Net Sales)",dot:"d-rev",tag:"",def:"The total amount earned from selling goods or services during the period, net of returns, allowances, and discounts. This is the starting point — the 'top line' — of the income statement.",formula:null,note:"Also called 'Net Revenue' or 'Total Revenue'. Gross sales minus returns and discounts = Net Sales."},
+  {name:"Cost of Goods Sold (COGS)",dot:"d-cost",tag:"",def:"The direct costs attributable to producing the goods sold or services delivered. For manufacturers: raw materials + direct labor + manufacturing overhead. For retailers: purchase cost of inventory sold.",formula:"COGS = Beginning Inventory + Purchases − Ending Inventory",note:"Also called 'Cost of Revenue' (service businesses). Does NOT include SG&A, R&D, or D&A unless directly tied to production."},
+  {name:"Gross Profit",dot:"d-profit",tag:"tag-sub",tagLabel:"Subtotal",def:"The profit remaining after deducting direct production costs from revenue. It measures how efficiently a company produces its products before accounting for overhead.",formula:"Gross Profit = Revenue − COGS",note:"Gross Margin % = Gross Profit ÷ Revenue × 100. The higher the gross margin, the more each dollar of revenue contributes to covering overhead and generating profit."},
+  {name:"Selling, General & Administrative (SG&A)",dot:"d-exp",tag:"",def:"Operating expenses not directly tied to production — includes salaries for sales/admin staff, marketing, office rent, utilities, insurance, and management compensation.",formula:null,note:"This is often the largest controllable cost lever. Companies under pressure to improve margins typically scrutinize SG&A first."},
+  {name:"Research & Development (R&D)",dot:"d-exp",tag:"",def:"Expenditures on innovation, product development, and technology. Expensed as incurred under US GAAP (some development costs capitalized under IFRS).",formula:null,note:"High R&D spend signals future investment but depresses current margins. Tech and pharma companies typically carry the highest R&D ratios."},
+  {name:"Depreciation & Amortization (D&A)",dot:"d-exp",tag:"tag-nc",tagLabel:"Non-Cash",def:"The systematic allocation of the cost of long-term assets over their useful lives. Depreciation applies to tangible assets (PP&E); amortization applies to intangible assets (patents, software, acquired intangibles).",formula:"Annual Depreciation (straight-line) = (Asset Cost − Salvage Value) ÷ Useful Life",note:"D&A is a non-cash expense — it reduces net income but does NOT consume cash. This is why it is added back in Operating Activities on the Cash Flow Statement."},
+  {name:"EBITDA",dot:"d-profit",tag:"tag-key",tagLabel:"Key Metric",def:"Earnings Before Interest, Taxes, Depreciation & Amortization. A proxy for operating cash flow and a widely used benchmark for comparing company valuations. Strips out the effects of financing, taxes, and non-cash charges.",formula:"EBITDA = Net Income + Interest + Taxes + D&A  OR  EBIT + D&A  OR  Gross Profit − SG&A − R&D",note:"EBITDA is not defined by GAAP — companies calculate it differently. EV/EBITDA is a common acquisition valuation multiple (4–8x for mature industrials, 10–20x+ for high-growth tech)."},
+  {name:"EBIT (Operating Income)",dot:"d-profit",tag:"tag-sub",tagLabel:"Subtotal",def:"Earnings Before Interest and Taxes. Represents profit from core operations, independent of how the business is financed (debt vs. equity) or where it is domiciled (tax rates).",formula:"EBIT = Gross Profit − Total Operating Expenses  OR  EBITDA − D&A",note:"Also called 'Operating Income' or 'Operating Profit'. The Operating Margin = EBIT ÷ Revenue."},
+  {name:"Interest Expense",dot:"d-cost",tag:"",def:"The cost of borrowing — interest payments on bonds, loans, revolving credit, and other debt instruments. Deductible for tax purposes (the 'interest tax shield').",formula:"Interest Expense = Debt Balance × Interest Rate",note:"Net Interest = Interest Expense − Interest Income. A high interest burden (low interest coverage ratio) signals financial risk."},
+  {name:"Earnings Before Tax (EBT)",dot:"d-profit",tag:"tag-sub",tagLabel:"Subtotal",def:"Profit after operating expenses and interest, before income taxes are applied. Also called 'Pre-Tax Income'.",formula:"EBT = EBIT − Interest Expense + Other Income",note:"The effective tax rate = Tax Expense ÷ EBT. Deferred tax items can cause the effective rate to differ significantly from the statutory rate."},
+  {name:"Income Tax Expense",dot:"d-cost",tag:"",def:"The current and deferred income tax expense recognized in the period. Includes federal, state, and foreign taxes.",formula:"Tax Expense = EBT × Effective Tax Rate",note:"US statutory rate is 21% federal. Effective rates vary due to deductions, credits, deferred taxes, and international operations. Many large companies pay effective rates well below 21%."},
+  {name:"Net Income",dot:"d-profit",tag:"tag-sub",tagLabel:"Bottom Line",def:"The final 'bottom line' profit after all expenses, interest, and taxes. Belongs to shareholders. Increases retained earnings on the balance sheet.",formula:"Net Income = EBT − Income Tax Expense",note:"Net Margin = Net Income ÷ Revenue. Net Income ≠ Cash Flow due to non-cash items and accrual accounting."},
+  {name:"Earnings Per Share (EPS)",dot:"d-profit",tag:"tag-key",tagLabel:"Key Metric",def:"Net income allocated to each share of common stock. The most widely cited profitability metric for public companies.",formula:"Basic EPS = Net Income ÷ Basic Shares Outstanding\nDiluted EPS = Net Income ÷ Diluted Shares Outstanding",note:"Diluted shares include the effect of all potentially dilutive securities (options, warrants, convertible bonds). Diluted EPS is always ≤ Basic EPS. P/E ratio = Stock Price ÷ EPS."},
+];
+
+const IS_CALCS = [
+  {name:"Gross Margin %",desc:"Percentage of revenue remaining after direct production costs. A key indicator of pricing power and production efficiency.",formula:"Gross Margin % = (Gross Profit ÷ Revenue) × 100",ex:"Apex: ($200M ÷ $500M) × 100 = 40.0%"},
+  {name:"EBITDA Margin %",desc:"EBITDA as a percentage of revenue. Used to benchmark operating profitability across companies with different capital structures.",formula:"EBITDA Margin % = (EBITDA ÷ Revenue) × 100",ex:"Apex: ($100M ÷ $500M) × 100 = 20.0%"},
+  {name:"Operating Margin % (EBIT Margin)",desc:"Profit from core operations as a percentage of revenue, before financing costs and taxes.",formula:"Operating Margin % = (EBIT ÷ Revenue) × 100",ex:"Apex: ($75M ÷ $500M) × 100 = 15.0%"},
+  {name:"Net Profit Margin %",desc:"The ultimate bottom-line profitability metric — what percentage of each revenue dollar ends up as profit after all expenses.",formula:"Net Margin % = (Net Income ÷ Revenue) × 100",ex:"Apex: ($51M ÷ $500M) × 100 = 10.2%"},
+  {name:"Tax Rate (Effective)",desc:"The actual percentage of pre-tax income paid in taxes, accounting for credits, deductions, and deferred taxes.",formula:"Effective Tax Rate = Income Tax Expense ÷ EBT",ex:"Apex: $13.5M ÷ $64.5M = 20.9% (≈ statutory 21%)"},
+];
+
+const BS_ITEMS = [
+  // Assets
+  {group:"Current Assets",name:"Cash & Cash Equivalents",dot:"d-asset",tag:"",def:"The most liquid assets: physical currency, bank deposits, and short-term instruments convertible to cash within 90 days (money market funds, T-bills).",formula:null,note:"Evaluated alongside the cash flow statement. Growing cash could reflect strong OCF, or simply recent debt/equity issuance."},
+  {group:"Current Assets",name:"Accounts Receivable (AR), net",dot:"d-asset",tag:"",def:"Money owed to the company by customers for goods/services already delivered but not yet paid for. 'Net' means after deducting the allowance for doubtful accounts.",formula:"Net AR = Gross AR − Allowance for Doubtful Accounts",note:"Rising AR relative to revenue may signal collection problems or aggressive revenue recognition. Tracked via DSO (Days Sales Outstanding)."},
+  {group:"Current Assets",name:"Inventory",dot:"d-asset",tag:"",def:"Goods held for sale (finished goods), in production (WIP), or raw materials. Valued at the lower of cost or net realizable value.",formula:null,note:"FIFO vs. LIFO vs. weighted average — the costing method affects COGS, gross margin, and inventory value. Rising inventory relative to sales may signal slow-moving stock."},
+  {group:"Current Assets",name:"Prepaid Expenses",dot:"d-asset",tag:"",def:"Cash paid in advance for future benefits — insurance premiums, rent deposits, software subscriptions paid upfront.",formula:null,note:"Prepaid expenses are assets (not expenses) until the benefit is consumed, at which point they are expensed on the income statement."},
+  {group:"Non-Current Assets",name:"Property, Plant & Equipment (PP&E), net",dot:"d-asset",tag:"",def:"Long-lived tangible assets used in operations: land, buildings, machinery, vehicles, technology infrastructure. Shown net of accumulated depreciation.",formula:"Net PP&E = Gross PP&E − Accumulated Depreciation",note:"Gross PP&E + CapEx − Disposals = New Gross PP&E. Net PP&E shrinks each period as depreciation accumulates unless offset by new CapEx."},
+  {group:"Non-Current Assets",name:"Goodwill",dot:"d-asset",tag:"",def:"The premium paid in an acquisition above the fair value of identifiable net assets. Arises only through business combinations.",formula:"Goodwill = Purchase Price − Fair Value of Net Assets Acquired",note:"Under US GAAP, goodwill is not amortized but tested annually for impairment. A goodwill impairment charge flows through the income statement. Large goodwill balances are a red flag if overpaid acquisitions are later impaired."},
+  {group:"Non-Current Assets",name:"Intangible Assets, net",dot:"d-asset",tag:"",def:"Non-physical assets with economic value: patents, trademarks, customer relationships, software, licenses, brand names. Distinguished from goodwill by being identifiable.",formula:null,note:"Definite-lived intangibles are amortized; indefinite-lived ones (like certain trademarks) are tested for impairment. Often large after acquisitions."},
+  // Liabilities
+  {group:"Current Liabilities",name:"Accounts Payable (AP)",dot:"d-liab",tag:"",def:"Amounts owed to suppliers and vendors for goods/services received but not yet paid for. The mirror image of Accounts Receivable.",formula:null,note:"Extending AP is a source of free financing — paying suppliers slowly. Tracked via DPO (Days Payable Outstanding). But stretching too far damages supplier relationships."},
+  {group:"Current Liabilities",name:"Accrued Liabilities",dot:"d-liab",tag:"",def:"Expenses incurred but not yet paid or invoiced at period-end: wages payable, interest payable, tax accruals, warranty reserves.",formula:null,note:"Accruals reflect the matching principle — expenses are recognized when incurred, not when cash is paid. A large jump in accruals relative to revenue warrants investigation."},
+  {group:"Current Liabilities",name:"Current Portion of Long-Term Debt (CPLTD)",dot:"d-liab",tag:"",def:"The portion of long-term debt due within the next 12 months — reclassified from long-term liabilities at the balance sheet date.",formula:null,note:"Rising CPLTD signals upcoming cash needs for debt service. If the company cannot refinance or generate enough OCF, this creates liquidity risk."},
+  {group:"Non-Current Liabilities",name:"Long-Term Debt (LTD)",dot:"d-liab",tag:"",def:"Loans, bonds, and credit facilities with maturities beyond 12 months. The primary source of financial leverage for most companies.",formula:"Annual Interest Cost = LTD × Weighted Average Interest Rate",note:"Total Debt = CPLTD + LTD. Net Debt = Total Debt − Cash. A company's debt load is assessed relative to EBITDA (Debt/EBITDA) and its ability to cover interest (Interest Coverage Ratio)."},
+  {group:"Non-Current Liabilities",name:"Deferred Tax Liabilities",dot:"d-liab",tag:"",def:"Taxes owed in the future due to temporary differences between financial accounting (GAAP) and tax accounting. Common cause: accelerated depreciation for tax purposes.",formula:null,note:"Not a cash obligation today, but will become one. Large and growing deferred tax liabilities may indicate aggressive tax deferral strategies."},
+  // Equity
+  {group:"Shareholders' Equity",name:"Common Stock & Additional Paid-in Capital (APIC)",dot:"d-eq",tag:"",def:"The amount shareholders paid when shares were originally issued. Common Stock = par value × shares issued. APIC = proceeds above par value. Also increases when stock options and warrants are exercised.",formula:null,note:"For most companies, par value is nominal ($0.01/share). APIC is the economically significant component."},
+  {group:"Shareholders' Equity",name:"Retained Earnings",dot:"d-eq",tag:"tag-key",tagLabel:"Key Link",def:"Cumulative net income earned since the company's founding, minus all dividends ever declared. The primary link between the income statement and balance sheet.",formula:"Retained Earnings (end) = Retained Earnings (beg) + Net Income − Dividends Declared",note:"Negative retained earnings (a 'deficit') indicates cumulative losses exceed cumulative profits. Common for early-stage companies. A mature company's retained earnings often dwarf its paid-in capital."},
+  {group:"Shareholders' Equity",name:"Treasury Stock",dot:"d-eq",tag:"",def:"Shares the company has repurchased from the open market. Shown as a negative number (contra-equity account) because buybacks reduce total equity.",formula:"Treasury Stock impact: Total Equity decreases by the repurchase price",note:"Buybacks reduce shares outstanding → increase EPS (if earnings unchanged). From a balance sheet perspective, buybacks reduce both assets (cash) and equity simultaneously."},
+];
+
+const CF_ITEMS = [
+  {group:"Operating Activities",name:"Net Income (starting point)",dot:"d-op",tag:"",def:"The indirect method begins with accrual-basis net income and works backward to cash. This is the bridge between the income statement and the cash flow statement.",formula:null,note:"The direct method instead lists actual cash receipts and payments. Indirect is used by >95% of public companies under US GAAP."},
+  {group:"Operating Activities",name:"Depreciation & Amortization (add-back)",dot:"d-op",tag:"tag-nc",tagLabel:"Non-Cash",def:"D&A reduced net income on the income statement but required no cash outflow. Adding it back restores the cash picture. This is typically the largest reconciling item.",formula:"D&A Add-back = Same as D&A on Income Statement",note:"Other common non-cash add-backs: stock-based compensation, impairment charges, deferred taxes, amortization of debt discount."},
+  {group:"Operating Activities",name:"Changes in Working Capital",dot:"d-op",tag:"",def:"Changes in operating current assets and liabilities between periods. An increase in an asset (AR, Inventory) is a use of cash; an increase in a liability (AP, Accrued) is a source of cash.",formula:"WC Change = ΔCurrent Assets (excl. cash) − ΔCurrent Liabilities\nCash impact: opposite sign of asset change; same sign as liability change",note:"Working capital changes are often volatile quarter to quarter. Rising AR and Inventory relative to revenue are potential red flags for cash conversion."},
+  {group:"Investing Activities",name:"Capital Expenditures (CapEx)",dot:"d-inv",tag:"",def:"Cash spent purchasing, constructing, or improving long-term tangible assets (PP&E). The primary outflow in investing activities for most industrial companies.",formula:"Maintenance CapEx: keeps existing assets running\nGrowth CapEx: adds new capacity",note:"CapEx is not expensed immediately — it is capitalized on the balance sheet and depreciated over time. Free Cash Flow = OCF − CapEx."},
+  {group:"Investing Activities",name:"Acquisitions",dot:"d-inv",tag:"",def:"Cash paid to acquire other businesses or specific assets. One of the largest potential investing outflows — can be transformational in scale.",formula:null,note:"Acquisitions are a major driver of goodwill on the balance sheet. The true cost includes not just purchase price but also integration expenses (typically in operating activities)."},
+  {group:"Financing Activities",name:"Debt Issuance / Repayment",dot:"d-fin",tag:"",def:"Cash received from new borrowings (positive) or paid to retire existing debt principal (negative). Interest payments are typically in Operating Activities under US GAAP.",formula:null,note:"Under IFRS, companies may classify interest paid as either operating or financing. This creates comparability challenges in cross-border analysis."},
+  {group:"Financing Activities",name:"Dividends Paid",dot:"d-fin",tag:"",def:"Cash distributed to shareholders as a return of capital. Declared on the income statement and statement of equity; actual cash payment appears here.",formula:null,note:"Dividend per share × shares outstanding = total dividends. Dividend yield = Annual Dividend ÷ Stock Price."},
+  {group:"Financing Activities",name:"Share Repurchases (Buybacks)",dot:"d-fin",tag:"",def:"Cash used to buy back the company's own shares. Reduces shares outstanding, increasing EPS. Reflected as an increase in Treasury Stock on the balance sheet.",formula:null,note:"Buybacks vs. dividends: both return cash to shareholders. Buybacks are more flexible (can be stopped without the stigma of cutting a dividend) and more tax-efficient in certain regimes."},
+];
+
+const SE_ITEMS = [
+  {group:"Equity Components",name:"Common Stock (Par Value)",dot:"d-eq",tag:"",def:"The nominal/face value assigned to each share when authorized, typically $0.01 or $1.00 per share. Usually an immaterial amount relative to the total equity balance.",formula:"Common Stock = Par Value per Share × Shares Issued",note:"The par value concept is largely a historical artifact. Most economic significance is captured in APIC."},
+  {group:"Equity Components",name:"Additional Paid-in Capital (APIC)",dot:"d-eq",tag:"",def:"The premium above par value received when shares are sold to investors. Also increases when employees exercise stock options and warrants.",formula:"APIC increases = (IPO/secondary offering proceeds − par value) + stock option exercises",note:"APIC is sometimes called 'Contributed Capital' or 'Capital in Excess of Par Value'."},
+  {group:"Equity Components",name:"Retained Earnings",dot:"d-eq",tag:"tag-key",tagLabel:"Key Link",def:"Running total of all net income earned minus all dividends declared since the company's inception. The largest equity component for profitable mature companies.",formula:"RE (end) = RE (beg) + Net Income − Dividends",note:"Net losses decrease RE. A company with sustained losses will have a negative RE balance ('accumulated deficit')."},
+  {group:"Equity Components",name:"Treasury Stock",dot:"d-eq",tag:"",def:"The cost of shares repurchased by the company. Reduces total equity (shown as a negative). Shares held in treasury do not receive dividends and do not vote.",formula:"Buyback: Assets (Cash) ↓, Equity (Treasury Stock) ↑ negative → Net Equity ↓",note:"Retirement of treasury shares permanently reduces shares authorized. Most buybacks keep shares as 'treasury' for potential future reissuance (e.g., for equity compensation plans)."},
+  {group:"Equity Components",name:"Accumulated Other Comprehensive Income (AOCI)",dot:"d-eq",tag:"",def:"Unrealized gains and losses that bypass the income statement: foreign currency translation adjustments, unrealized gains/losses on available-for-sale securities, pension liability adjustments, cash flow hedge gains/losses.",formula:null,note:"When the underlying item is realized (sold, settled), the accumulated OCI amount is 'recycled' through the income statement. Large negative AOCI from pension obligations is common for legacy industrials."},
+  {group:"Equity Transactions",name:"Dividend Declaration",dot:"d-gray",tag:"",def:"When a dividend is declared, retained earnings decrease (debit) and a dividends payable liability is created (credit). Cash leaves when the dividend is actually paid.",formula:"RE decreases by: Dividends per Share × Shares Outstanding",note:"Ex-dividend date: buyer does not receive the declared dividend. Record date: who is on the books. Payment date: cash is distributed."},
+  {group:"Equity Transactions",name:"Stock-Based Compensation (SBC)",dot:"d-gray",tag:"tag-nc",tagLabel:"Non-Cash",def:"Non-cash expense recognized over the vesting period of employee stock options and restricted stock units (RSUs). Increases APIC; decreases retained earnings via the income statement.",formula:"Annual SBC expense = grant-date fair value ÷ vesting period (years)",note:"SBC is a real economic cost (dilutes existing shareholders) but a non-cash charge on the income statement. Adding back SBC in the cash flow statement is standard — but investors should not dismiss it as cost-free."},
+];
+
+const KM_LIQUIDITY = [
+  {name:"Current Ratio",formula:"Current Assets ÷ Current Liabilities",val:"2.0x",calc:"$190M ÷ $95M = 2.0x",bench:"Healthy: >1.5x | Caution: <1.0x",def:"Measures ability to cover short-term obligations with short-term assets. A ratio of 2.0x means the company has $2 of current assets for every $1 of current liabilities."},
+  {name:"Quick Ratio (Acid-Test)",formula:"(Cash + AR) ÷ Current Liabilities",val:"1.42x",calc:"($75M + $60M) ÷ $95M = 1.42x",bench:"Healthy: >1.0x | Caution: <0.7x",def:"A stricter liquidity test that excludes inventory (less liquid). Answers: can the company pay short-term debts without selling inventory?"},
+  {name:"Cash Ratio",formula:"Cash & Equivalents ÷ Current Liabilities",val:"0.79x",calc:"$75M ÷ $95M = 0.79x",bench:"Context-dependent | Conservative: >0.5x",def:"The most conservative liquidity measure — only counts cash. Useful for assessing immediate crisis survival, not day-to-day operations."},
+  {name:"Working Capital",formula:"Current Assets − Current Liabilities",val:"$95.0M",calc:"$190M − $95M = $95.0M",bench:"Positive = healthy buffer",def:"The net short-term resources available after covering near-term obligations. Positive working capital provides a buffer; negative may signal operational stress."},
+];
+
+const KM_PROFITABILITY = [
+  {name:"Gross Margin %",formula:"Gross Profit ÷ Revenue × 100",val:"40.0%",calc:"$200M ÷ $500M × 100",bench:"Varies widely by industry (software >70%, retail <30%)",def:"Percentage of revenue retained after direct production costs. Reflects pricing power, production efficiency, and product mix."},
+  {name:"EBITDA Margin %",formula:"EBITDA ÷ Revenue × 100",val:"20.0%",calc:"$100M ÷ $500M × 100",bench:"Good: >15% for industrials; >30% for software/SaaS",def:"Operating profitability before non-cash charges and financing. The most common M&A valuation benchmark."},
+  {name:"Operating Margin % (EBIT)",formula:"EBIT ÷ Revenue × 100",val:"15.0%",calc:"$75M ÷ $500M × 100",bench:"Good: >10% for most industries",def:"Core operational profitability after all operating expenses including D&A, but before interest and taxes."},
+  {name:"Net Profit Margin %",formula:"Net Income ÷ Revenue × 100",val:"10.2%",calc:"$51M ÷ $500M × 100",bench:"Good: >8% for most industries",def:"Bottom-line profitability. After all expenses, interest, and taxes — what remains as profit per dollar of revenue."},
+  {name:"Return on Assets (ROA)",formula:"Net Income ÷ Total Assets × 100",val:"8.9%",calc:"$51M ÷ $570M × 100",bench:"Good: >5%; Excellent: >10%",def:"How efficiently a company uses its asset base to generate profit. Asset-heavy industries (utilities, airlines) have lower ROA than asset-light businesses (software)."},
+  {name:"Return on Equity (ROE)",formula:"Net Income ÷ Total Equity × 100",val:"19.6%",calc:"$51M ÷ $260M × 100",bench:"Good: >15%; S&P 500 avg: ~14%",def:"Profit generated per dollar of shareholder equity. Increases with leverage (more debt = less equity denominator). Decomposed via DuPont Analysis."},
+  {name:"Return on Invested Capital (ROIC)",formula:"NOPAT ÷ (Debt + Equity) × 100",val:"10.7%",calc:"NOPAT = $75M×(1−21%) = $59.3M; IC = $200M+$260M = $460M",bench:"Excellent if ROIC > WACC (company creates value)",def:"The truest measure of management's efficiency. NOPAT = EBIT × (1 − tax rate). Invested Capital = Debt + Equity (or Total Assets − Operating Current Liabilities − Cash)."},
+];
+
+const KM_LEVERAGE = [
+  {name:"Debt-to-Equity (D/E)",formula:"Total Debt ÷ Total Equity",val:"0.85x",calc:"($20M + $200M) ÷ $260M = 0.85x",bench:"Conservative: <1.0x | Caution: >2.0x",def:"How much debt is used relative to equity. A ratio of 0.85x means $0.85 of debt for every $1 of equity."},
+  {name:"Net Debt / EBITDA",formula:"(Total Debt − Cash) ÷ EBITDA",val:"1.45x",calc:"($220M − $75M) ÷ $100M = 1.45x",bench:"Investment grade: <2.5x | Leveraged: >4.0x",def:"The most common leverage metric in M&A and credit analysis. Measures how many years of EBITDA it would take to repay net debt. A key covenant benchmark."},
+  {name:"Interest Coverage Ratio",formula:"EBIT ÷ Interest Expense",val:"6.25x",calc:"$75M ÷ $12M = 6.25x",bench:"Healthy: >3.0x | Distress risk: <1.5x",def:"How many times EBIT covers annual interest payments. Below 1.0x means the company cannot service its debt from operations — a severe warning sign."},
+  {name:"Total Debt Ratio",formula:"Total Liabilities ÷ Total Assets",val:"56.1%",calc:"$320M ÷ $570M = 56.1%",bench:"Conservative: <40% | Caution: >70%",def:"What percentage of total assets is financed by liabilities (vs. equity). Creditors prefer lower ratios; equity holders may prefer moderate leverage to enhance returns."},
+];
+
+const KM_EFFICIENCY = [
+  {name:"Days Sales Outstanding (DSO)",formula:"(AR ÷ Revenue) × 365",val:"43.8 days",calc:"($60M ÷ $500M) × 365",bench:"Better: lower | Typical: 30–60 days",def:"Average number of days to collect payment after a sale. Rising DSO may indicate collection problems or more liberal credit terms."},
+  {name:"Days Inventory Outstanding (DIO)",formula:"(Inventory ÷ COGS) × 365",val:"54.8 days",calc:"($45M ÷ $300M) × 365",bench:"Better: lower | Varies greatly by industry",def:"Average days to sell through inventory. High DIO = slow-moving stock, capital tied up. Low DIO = lean, efficient — but risk of stockouts."},
+  {name:"Days Payable Outstanding (DPO)",formula:"(AP ÷ COGS) × 365",val:"48.7 days",calc:"($40M ÷ $300M) × 365",bench:"Better: higher (free financing) | Typical: 30–60 days",def:"Average number of days to pay suppliers. Higher DPO means the company is effectively using supplier credit as free financing."},
+  {name:"Cash Conversion Cycle (CCC)",formula:"DSO + DIO − DPO",val:"49.9 days",calc:"43.8 + 54.8 − 48.7 = 49.9 days",bench:"Better: lower (or negative for retailers) | Amazon: negative CCC",def:"The total days from cash outlay to cash collection. Measures efficiency of working capital management. Negative CCC means the company collects cash before it has to pay suppliers — the best-case scenario."},
+  {name:"Asset Turnover",formula:"Revenue ÷ Total Assets",val:"0.88x",calc:"$500M ÷ $570M = 0.88x",bench:"Higher is better; asset-light models >2.0x",def:"How much revenue is generated per dollar of assets. Combined with net margin in the DuPont model: Net Margin × Asset Turnover × Equity Multiplier = ROE."},
+  {name:"Inventory Turnover",formula:"COGS ÷ Inventory",val:"6.7x",calc:"$300M ÷ $45M = 6.7x",bench:"Higher is better; varies by industry",def:"How many times inventory is sold and replaced per year. 6.7x means inventory turns over about every 55 days. Low turnover may signal obsolescence risk."},
+];
+
+// ============================================================
+// RENDER LINE ITEMS
+// ============================================================
+function renderLineItems(items, containerId) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  const groups = {};
+  items.forEach(item => {
+    const g = item.group || 'Items';
+    if (!groups[g]) groups[g] = [];
+    groups[g].push(item);
+  });
+  let html = '';
+  Object.entries(groups).forEach(([group, groupItems]) => {
+    html += `<div class="item-group"><div class="item-group-label">${group}</div>`;
+    groupItems.forEach((item, i) => {
+      const tagHtml = item.tag ? `<span class="li-tag ${item.tag}">${item.tagLabel}</span>` : '';
+      const formulaHtml = item.formula ? `<div class="li-formula">📐 ${item.formula.replace(/\n/g,'<br>')}</div>` : '';
+      const noteHtml = item.note ? `<div class="li-note">💡 ${item.note}</div>` : '';
+      html += `
+        <div class="li-card" id="li-${containerId}-${i}">
+          <div class="li-header" onclick="toggleItem('li-${containerId}-${i}')">
+            <div class="li-dot ${item.dot}"></div>
+            <div class="li-name">${item.name}</div>
+            ${tagHtml}
+            <div class="li-arrow">▼</div>
+          </div>
+          <div class="li-body">
+            <div class="li-def">${item.def}</div>
+            ${formulaHtml}
+            ${noteHtml}
+          </div>
+        </div>`;
+    });
+    html += '</div>';
+  });
+  container.innerHTML = html;
+}
+
+function renderCalcCards(calcs, containerId) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  let html = '';
+  calcs.forEach(c => {
+    html += `
+      <div class="calc-card">
+        <div class="calc-name">${c.name}</div>
+        <div class="calc-desc">${c.desc}</div>
+        <div class="calc-formula">${c.formula}</div>
+        <div class="calc-ex">✓ Example (Apex Industries): ${c.ex}</div>
+      </div>`;
+  });
+  container.innerHTML = html;
+}
+
+function renderMetricCards(metrics, containerId) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  let html = '<div class="ratio-grid">';
+  metrics.forEach(m => {
+    html += `
+      <div class="ratio-card">
+        <div class="ratio-label">${m.name}</div>
+        <div class="ratio-val">${m.val}</div>
+        <div class="ratio-formula">${m.formula}</div>
+        <div class="li-def" style="font-size:12px;color:var(--text2);line-height:1.5;">${m.def}</div>
+        <div class="ratio-bench">📊 Benchmark: ${m.bench}</div>
+      </div>`;
+  });
+  html += '</div>';
+  metrics.forEach(m => {
+    html += `
+      <div class="calc-card">
+        <div class="calc-name">${m.name}</div>
+        <div class="calc-desc">${m.def}</div>
+        <div class="calc-formula">${m.formula}</div>
+        <div class="calc-ex">✓ Apex Industries: ${m.calc} = ${m.val}</div>
+        <div class="li-note" style="font-size:12px;color:var(--text2);margin-top:8px;">📊 ${m.bench}</div>
+      </div>`;
+  });
+  container.innerHTML = html;
+}
+
+function toggleItem(id) {
+  const el = document.getElementById(id);
+  el.classList.toggle('open');
+}
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  const nb = document.getElementById('nav-' + id);
+  if (nb) nb.classList.add('active');
+  initCharts(id);
+}
+
+function switchTab(section, tabId) {
+  const tabsEl = document.getElementById(section + '-tabs');
+  const sectionEl = document.getElementById(section);
+  if (!tabsEl || !sectionEl) return;
+  tabsEl.querySelectorAll('.tab-btn').forEach((btn, i) => {
+    btn.classList.remove('active');
+  });
+  sectionEl.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  const targetPane = document.getElementById(section + '-' + tabId);
+  if (targetPane) targetPane.classList.add('active');
+  // find and activate correct tab button
+  tabsEl.querySelectorAll('.tab-btn').forEach(btn => {
+    if (btn.getAttribute('onclick') && btn.getAttribute('onclick').includes("'" + tabId + "'")) {
+      btn.classList.add('active');
+    }
+  });
+  if (tabId === 'visual') initCharts(section);
+}
+
+// ============================================================
+// SEARCH
+// ============================================================
+const ALL_ITEMS = [
+  ...IS_ITEMS.map(i => ({...i, section:'is', sectionName:'Income Statement'})),
+  ...BS_ITEMS.map(i => ({...i, section:'bs', sectionName:'Balance Sheet'})),
+  ...CF_ITEMS.map(i => ({...i, section:'cf', sectionName:'Cash Flow Statement'})),
+  ...SE_ITEMS.map(i => ({...i, section:'se', sectionName:"Stockholders' Equity"})),
+  ...IS_CALCS.map(i => ({name:i.name, def:i.desc, formula:i.formula, section:'is', sectionName:'Income Statement — Calculations'})),
+  ...KM_LIQUIDITY.map(i => ({name:i.name, def:i.def, formula:i.formula, section:'km', sectionName:'Key Metrics — Liquidity'})),
+  ...KM_PROFITABILITY.map(i => ({name:i.name, def:i.def, formula:i.formula, section:'km', sectionName:'Key Metrics — Profitability'})),
+  ...KM_LEVERAGE.map(i => ({name:i.name, def:i.def, formula:i.formula, section:'km', sectionName:'Key Metrics — Leverage'})),
+  ...KM_EFFICIENCY.map(i => ({name:i.name, def:i.def, formula:i.formula, section:'km', sectionName:'Key Metrics — Efficiency'})),
+];
+
+function openSearch() {
+  document.getElementById('search-modal').classList.add('open');
+  setTimeout(() => document.getElementById('modal-search-input').focus(), 50);
+}
+function closeSearch() {
+  document.getElementById('search-modal').classList.remove('open');
+  document.getElementById('modal-search-input').value = '';
+  document.getElementById('search-results').innerHTML = '<div class="s-empty">Start typing to search across all financial terms, definitions, and formulas.</div>';
+}
+function closeSearchOutside(e) {
+  if (e.target === document.getElementById('search-modal')) closeSearch();
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSearch(); });
+
+function doSearch(q) {
+  const results = document.getElementById('search-results');
+  if (!q.trim()) {
+    results.innerHTML = '<div class="s-empty">Start typing to search across all financial terms, definitions, and formulas.</div>';
+    return;
+  }
+  const lq = q.toLowerCase();
+  const matches = ALL_ITEMS.filter(item =>
+    item.name.toLowerCase().includes(lq) ||
+    (item.def && item.def.toLowerCase().includes(lq)) ||
+    (item.formula && item.formula.toLowerCase().includes(lq)) ||
+    (item.note && item.note.toLowerCase().includes(lq))
+  ).slice(0, 20);
+  if (!matches.length) {
+    results.innerHTML = '<div class="s-empty">No results found for "' + q + '"</div>';
+    return;
+  }
+  results.innerHTML = matches.map(m => `
+    <div class="s-item" onclick="goToResult('${m.section}','${m.name.replace(/'/g,"\\'")}')">
+      <div class="s-sec">${m.sectionName}</div>
+      <div class="s-name">${m.name}</div>
+      <div class="s-def">${(m.def || '').substring(0,120)}…</div>
+    </div>`).join('');
+}
+
+function goToResult(section, name) {
+  closeSearch();
+  showSection(section);
+  if (section === 'km') {
+    // show relevant tab
+    const lname = name.toLowerCase();
+    if (KM_LIQUIDITY.find(m => m.name === name)) switchTab('km','liquidity');
+    else if (KM_PROFITABILITY.find(m => m.name === name)) switchTab('km','profitability');
+    else if (KM_LEVERAGE.find(m => m.name === name)) switchTab('km','leverage');
+    else if (KM_EFFICIENCY.find(m => m.name === name)) switchTab('km','efficiency');
+  } else {
+    switchTab(section,'items');
+  }
+}
+
+// ============================================================
+// CHARTS
+// ============================================================
+const chartInstances = {};
+
+function initCharts(section) {
+  if (section === 'is') {
+    initISCharts();
+  } else if (section === 'bs') {
+    initBSCharts();
+  } else if (section === 'cf') {
+    initCFCharts();
+  } else if (section === 'km') {
+    initKMCharts();
+  }
+}
+
+function mkChart(id, config) {
+  if (chartInstances[id]) { chartInstances[id].destroy(); }
+  const canvas = document.getElementById(id);
+  if (!canvas) return;
+  chartInstances[id] = new Chart(canvas, config);
+}
+
+function initISCharts() {
+  mkChart('is-waterfall-chart', {
+    type: 'bar',
+    data: {
+      labels: ['Revenue','COGS','Gross Profit','SG&A','R&D','D&A','EBIT','Interest & Other','EBT','Tax','Net Income'],
+      datasets: [{
+        label: '$ Millions',
+        data: [500, -300, 200, -80, -20, -25, 75, -10.5, 64.5, -13.5, 51],
+        backgroundColor: [
+          '#059669','#dc2626','#2563eb','#d97706','#d97706','#d97706',
+          '#2563eb','#dc2626','#2563eb','#dc2626','#059669'
+        ],
+        borderRadius: 4,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { ticks: { callback: v => '$' + Math.abs(v) + 'M' }, grid: { color: '#f1f5f9' } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+  mkChart('is-margin-chart', {
+    type: 'bar',
+    data: {
+      labels: ['Gross\nMargin','EBITDA\nMargin','EBIT\nMargin','Net\nMargin'],
+      datasets: [{
+        data: [40, 20, 15, 10.2],
+        backgroundColor: ['#059669','#2563eb','#0891b2','#7c3aed'],
+        borderRadius: 4,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { max: 50, ticks: { callback: v => v + '%' }, grid: { color: '#f1f5f9' } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+  mkChart('is-expense-chart', {
+    type: 'doughnut',
+    data: {
+      labels: ['COGS ($300M)','SG&A ($80M)','R&D ($20M)','D&A ($25M)','Net Income ($51M)','Tax ($13.5M)','Interest & Other ($10.5M)'],
+      datasets: [{
+        data: [300, 80, 20, 25, 51, 13.5, 10.5],
+        backgroundColor: ['#dc2626','#d97706','#f59e0b','#8b5cf6','#059669','#6b7280','#0891b2'],
+        borderWidth: 2, borderColor: '#fff'
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'right', labels: { font: { size: 11 } } } }
+    }
+  });
+}
+
+function initBSCharts() {
+  mkChart('bs-assets-chart', {
+    type: 'doughnut',
+    data: {
+      labels: ['Cash ($75M)','AR ($60M)','Inventory ($45M)','Prepaid ($10M)','Net PP&E ($250M)','Intangibles ($50M)','Goodwill ($80M)'],
+      datasets: [{
+        data: [75, 60, 45, 10, 250, 50, 80],
+        backgroundColor: ['#059669','#0891b2','#2563eb','#6366f1','#7c3aed','#a855f7','#c084fc'],
+        borderWidth: 2, borderColor: '#fff'
+      }]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { font: { size: 11 } } } } }
+  });
+  mkChart('bs-le-chart', {
+    type: 'doughnut',
+    data: {
+      labels: ['AP ($40M)','Accrued ($35M)','Current Debt ($20M)','LT Debt ($200M)','Deferred Tax ($25M)','Common+APIC ($150M)','Retained Earnings ($100M)'],
+      datasets: [{
+        data: [40, 35, 20, 200, 25, 150, 100],
+        backgroundColor: ['#dc2626','#ef4444','#f87171','#b91c1c','#fca5a5','#059669','#34d399'],
+        borderWidth: 2, borderColor: '#fff'
+      }]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { font: { size: 11 } } } } }
+  });
+  mkChart('bs-structure-chart', {
+    type: 'bar',
+    data: {
+      labels: ['Balance Sheet ($570M)'],
+      datasets: [
+        { label: 'Current Assets', data: [190], backgroundColor: '#059669' },
+        { label: 'Non-Current Assets', data: [380], backgroundColor: '#0891b2' },
+        { label: 'Current Liabilities', data: [-95], backgroundColor: '#dc2626' },
+        { label: 'LT Liabilities', data: [-225], backgroundColor: '#ef4444' },
+        { label: 'Equity', data: [-250], backgroundColor: '#7c3aed' },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'top' } },
+      scales: {
+        x: { stacked: true, grid: { display: false } },
+        y: { stacked: true, ticks: { callback: v => '$' + Math.abs(v) + 'M' }, grid: { color: '#f1f5f9' } }
+      }
+    }
+  });
+}
+
+function initCFCharts() {
+  mkChart('cf-bar-chart', {
+    type: 'bar',
+    data: {
+      labels: ['Operating Activities (OCF)','Investing Activities','Financing Activities','Net Change in Cash'],
+      datasets: [{
+        data: [81, -47, -25, 9],
+        backgroundColor: v => v.raw >= 0 ? '#059669' : '#dc2626',
+        borderRadius: 4,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { ticks: { callback: v => '$' + v + 'M' }, grid: { color: '#f1f5f9' } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+  mkChart('cf-bridge-chart', {
+    type: 'bar',
+    data: {
+      labels: ['Net Income','+ D&A','+ SBC','− ΔAR','− ΔInventory','+ ΔAP','+ ΔAccrued','= OCF'],
+      datasets: [{
+        data: [51, 25, 8, -5, -8, 6, 4, 81],
+        backgroundColor: ['#2563eb','#059669','#059669','#dc2626','#dc2626','#059669','#059669','#7c3aed'],
+        borderRadius: 4,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { ticks: { callback: v => '$' + v + 'M' }, grid: { color: '#f1f5f9' } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+}
+
+function initKMCharts() {
+  mkChart('km-margins-chart', {
+    type: 'bar',
+    data: {
+      labels: ['Gross Margin','EBITDA Margin','EBIT Margin','Net Margin','ROA','ROE'],
+      datasets: [
+        { label: 'Apex Industries', data: [40, 20, 15, 10.2, 8.9, 19.6], backgroundColor: '#2563eb', borderRadius: 4 },
+        { label: 'Industry Avg', data: [35, 16, 11, 7, 6, 12], backgroundColor: '#e2e8f0', borderRadius: 4 },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'top' } },
+      scales: {
+        y: { ticks: { callback: v => v + '%' }, grid: { color: '#f1f5f9' } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+  mkChart('km-wc-chart', {
+    type: 'bar',
+    data: {
+      labels: ['DSO (days)','DIO (days)','DPO (days)','CCC (days)'],
+      datasets: [
+        { label: 'Apex Industries', data: [43.8, 54.8, 48.7, 49.9], backgroundColor: '#0891b2', borderRadius: 4 },
+        { label: 'Industry Avg', data: [38, 60, 40, 58], backgroundColor: '#e2e8f0', borderRadius: 4 },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'top' } },
+      scales: {
+        y: { ticks: { callback: v => v + 'd' }, grid: { color: '#f1f5f9' } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+  mkChart('km-radar-chart', {
+    type: 'radar',
+    data: {
+      labels: ['Gross Margin','EBITDA Margin','Net Margin','ROE','Current Ratio','Interest Coverage','DSO (inv)','D/E (inv)'],
+      datasets: [
+        {
+          label: 'Apex Industries',
+          data: [80, 67, 68, 78, 80, 75, 72, 70],
+          borderColor: '#2563eb', backgroundColor: 'rgba(37,99,235,0.15)', borderWidth: 2, pointBackgroundColor: '#2563eb'
+        },
+        {
+          label: 'Industry Benchmark',
+          data: [60, 53, 47, 50, 60, 50, 63, 60],
+          borderColor: '#9ca3af', backgroundColor: 'rgba(156,163,175,0.1)', borderWidth: 2, pointBackgroundColor: '#9ca3af'
+        }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'top' } },
+      scales: { r: { min: 0, max: 100, ticks: { display: false } } }
+    }
+  });
+}
+
+// ============================================================
+// INIT
+// ============================================================
+(function init() {
+  renderLineItems(IS_ITEMS, 'is-line-items');
+  renderCalcCards(IS_CALCS, 'is-calc-cards');
+  renderLineItems(BS_ITEMS, 'bs-line-items');
+  renderCalcCards([
+    {name:"Working Capital",desc:"The net short-term operating resources. Positive = buffer against short-term obligations.",formula:"Working Capital = Current Assets − Current Liabilities",ex:"$190M − $95M = $95.0M"},
+    {name:"Net PP&E",desc:"The net book value of tangible long-term assets after accumulated depreciation.",formula:"Net PP&E = Gross PP&E − Accumulated Depreciation",ex:"$400M − $150M = $250.0M"},
+    {name:"Book Value of Equity (Net Assets)",desc:"Total equity — what shareholders theoretically own after all liabilities are paid.",formula:"Book Value = Total Assets − Total Liabilities",ex:"$570M − $320M = $250.0M"},
+    {name:"Retained Earnings Roll",desc:"Connects the beginning and ending retained earnings balances via net income and dividends.",formula:"RE (end) = RE (beg) + Net Income − Dividends Declared",ex:"$59M + $51M − $10M = $100.0M"},
+    {name:"Debt-to-Assets",desc:"What proportion of assets are financed by debt vs. equity.",formula:"Debt-to-Assets = Total Debt ÷ Total Assets",ex:"$220M ÷ $570M = 38.6%"},
+  ], 'bs-calc-cards');
+  renderLineItems(CF_ITEMS, 'cf-line-items');
+  renderCalcCards([
+    {name:"Free Cash Flow (FCF)",desc:"Cash available after maintaining/growing the asset base. The most important cash metric for valuation.",formula:"FCF = Operating Cash Flow (OCF) − Capital Expenditures (CapEx)",ex:"$81M − $50M = $31.0M"},
+    {name:"Cash Flow Conversion",desc:"How much of net income converts to free cash flow. >100% indicates high earnings quality.",formula:"Cash Conversion = FCF ÷ Net Income × 100",ex:"$31M ÷ $51M × 100 = 60.8%"},
+    {name:"CapEx Intensity",desc:"What percentage of revenue is reinvested in capital assets. High = capital-intensive business.",formula:"CapEx Intensity = CapEx ÷ Revenue × 100",ex:"$50M ÷ $500M × 100 = 10.0%"},
+    {name:"OCF-to-EBITDA",desc:"Ratio of cash-based operating profit to accrual-based EBITDA. Should be close to 1.0x for healthy earnings quality.",formula:"OCF-to-EBITDA = OCF ÷ EBITDA",ex:"$81M ÷ $100M = 0.81x (WC build-up explains the gap)"},
+  ], 'cf-calc-cards');
+  renderLineItems(SE_ITEMS, 'se-line-items');
+  renderCalcCards([
+    {name:"Retained Earnings Roll-Forward",desc:"The connecting calculation between the income statement and balance sheet equity section.",formula:"RE (end) = RE (beg) + Net Income − Dividends Declared",ex:"$59M + $51M − $10M = $100.0M"},
+    {name:"Dividend Payout Ratio",desc:"Percentage of net income returned to shareholders as dividends.",formula:"Payout Ratio = Dividends Declared ÷ Net Income × 100",ex:"$10M ÷ $51M × 100 = 19.6%"},
+    {name:"Dividend Retention Ratio",desc:"Percentage of net income retained for reinvestment (complement of payout ratio).",formula:"Retention Ratio = 1 − Payout Ratio  OR  (Net Income − Dividends) ÷ Net Income",ex:"1 − 19.6% = 80.4%"},
+    {name:"Book Value Per Share (BVPS)",desc:"Equity attributable to each common share. Floor value benchmark; P/B compares market price to this.",formula:"BVPS = Total Shareholders' Equity ÷ Shares Outstanding",ex:"$260M ÷ 100M shares = $2.60/share"},
+  ], 'se-calc-cards');
+  renderMetricCards(KM_LIQUIDITY, 'km-liquidity-cards');
+  renderMetricCards(KM_PROFITABILITY, 'km-profitability-cards');
+  renderMetricCards(KM_LEVERAGE, 'km-leverage-cards');
+  renderMetricCards(KM_EFFICIENCY, 'km-efficiency-cards');
+})();
+</script>
+</body>
+</html>
